@@ -19,6 +19,16 @@ public class JDBCEx {
 		guestbookSearch();
 	}
 	
+	private static void guestbookUpdate() {
+		//	연습문제: 방명록 번호와 비밀번호, 내용을 입력받아
+		//	Update하기
+	}
+	
+	private static void guestbookDelete() {
+		//	연습문제: 방명록 번호와 비밀번호 입력 받아서
+		//	Delete 하기
+	}
+	
 	private static void guestbookSearch() {
 		//	키워드 입력 받아서 검색 수행
 		guestbookSelectAll();
