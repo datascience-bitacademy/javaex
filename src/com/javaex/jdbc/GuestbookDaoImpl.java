@@ -2,6 +2,7 @@ package com.javaex.jdbc;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -76,8 +77,34 @@ public class GuestbookDaoImpl implements GuestbookDao {
 
 	@Override
 	public int insert(GuestbookVo vo) {
-		// TODO Auto-generated method stub
-		return 0;
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		int insertedCount = 0;	//	INSERT, UPDATE, DELETE 쿼리는 영향을 받은 레코드의 카운트 리턴
+		
+		try {
+			conn = getConnection();
+			String sql = "INSERT INTO guestbook (name, password, message, reg_date) " +
+				" VALUES(?, ?, ?, now())";	//	SQL 실행 계획
+			pstmt = conn.prepareStatement(sql);
+			
+			//	동적 데이터 연결
+			pstmt.setString(1, vo.getName());
+			pstmt.setString(2, vo.getPassword());
+			pstmt.setString(3, vo.getMessage());
+			
+			//	실행 : INSERT, UPDATE, DELETE -> exeucteUpdate()
+			insertedCount = pstmt.executeUpdate();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				pstmt.close();
+				conn.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		return insertedCount;
 	}
 
 	@Override
@@ -94,8 +121,46 @@ public class GuestbookDaoImpl implements GuestbookDao {
 
 	@Override
 	public List<GuestbookVo> searchByKeyword(String keyword) {
-		// TODO Auto-generated method stub
-		return null;
+		List<GuestbookVo> list = new ArrayList<>();
+		
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		
+		String sql = "SELECT no, name, password, message, reg_date FROM guestbook " +
+				"WHERE name LIKE ? OR message LIKE ?";
+		
+		try {
+			conn = getConnection();
+			pstmt = conn.prepareStatement(sql);
+			
+			pstmt.setString(1, "%" + keyword + "%");
+			pstmt.setString(2, "%" + keyword + "%");
+			
+			rs = pstmt.executeQuery();
+			
+			while(rs.next()) {
+				Long no = rs.getLong(1);
+				String name = rs.getString(2);
+				String password = rs.getString(3);
+				String message = rs.getString(4);
+				Date regDate = rs.getDate(5);
+				
+				GuestbookVo vo = new GuestbookVo(no, name, password, message, regDate);
+				list.add(vo);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				rs.close();
+				pstmt.close();
+				conn.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		return list;
 	}
 
 }
